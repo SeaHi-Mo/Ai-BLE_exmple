@@ -33,7 +33,11 @@
 /*  定义广播数据 总子节数不得超过31 byte  */
 static const struct bt_data salve_adv[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS,(BT_LE_AD_GENERAL| BT_LE_AD_NO_BREDR)),  //数据头占用 2 byte
-    BT_DATA(BT_DATA_NAME_COMPLETE,ble_slave_name,sizeof(ble_slave_name)-1),//第二个数据，定义名称
+    // BT_DATA(BT_DATA_NAME_COMPLETE,ble_slave_name,sizeof(ble_slave_name)-1),//第二个数据，定义名称
+};
+/*  定义扫描响应数据 总字节不得超过31byte*/
+static const struct bt_data salve_rsp[] = {
+    BT_DATA(BT_DATA_NAME_COMPLETE,ble_slave_name,sizeof(ble_slave_name)-1),//把设备名称放在扫描响应当中
 };
 
 /* 定义扫描响应数据 总字节数不得超过31 byte*/
@@ -59,13 +63,7 @@ static void bt_enable_cb(int err)
         LOG_I("BD_ADDR:(MSB)%02x:%02x:%02x:%02x:%02x:%02x(LSB)",
                bt_addr.a.val[5], bt_addr.a.val[4], bt_addr.a.val[3], bt_addr.a.val[2], bt_addr.a.val[1], bt_addr.a.val[0]);
         //蓝牙启动完成之后发送广播包
-        int err = -1;
-        err = bt_le_adv_start(BT_LE_ADV_CONN, salve_adv, ARRAY_SIZE(salve_adv), NULL, 0);
-        if (err)
-        {
-            LOG_E("[BLE] adv fail(err %d)", err);
-            return -1;
-        }
+        ble_salve_adv();
     }
 }
 
@@ -90,15 +88,15 @@ static void ble_stack_start(void)
 static int ble_salve_adv()
 {
     int err = -1;
-    err = bt_le_adv_start(BT_LE_ADV_CONN, salve_adv, ARRAY_SIZE(salve_adv), NULL, 0);
+    /*启动广播，赋值广播数据和扫描响应数据*/
+    err = bt_le_adv_start(BT_LE_ADV_CONN, salve_adv, ARRAY_SIZE(salve_adv), salve_rsp, ARRAY_SIZE(salve_rsp));
 
     if (err)
     {
         LOG_E("[BLE] adv fail(err %d)", err);
         return -1;
     }
-    err = bt_le_
-        return 0;
+    return 0;
 }
 
 void ai_ble_start(void)
